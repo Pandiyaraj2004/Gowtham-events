@@ -1,0 +1,242 @@
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
+import { useNavigate, Link } from 'react-router-dom';
+import { FiUser, FiMail, FiPhone, FiLock, FiEye, FiEyeOff, FiArrowLeft, FiLoader } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
+import { clientRegisterSchema, ClientRegisterFields } from '../utils/validation';
+import { Logo } from '../../components/Logo';
+
+export const RegisterClient: React.FC = () => {
+  const { registerClient } = useAuth();
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ClientRegisterFields>({
+    resolver: zodResolver(clientRegisterSchema),
+  });
+
+  const onSubmit = async (data: ClientRegisterFields) => {
+    setIsLoading(true);
+    try {
+      const session = await registerClient(data.email, data.name, data.phone, data.password);
+      toast.success(`Account created successfully! Welcome, ${session.name}.`);
+      navigate('/client', { replace: true });
+    } catch (error: any) {
+      toast.error(error.message || 'Registration failed. Please check inputs.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex bg-zinc-50 dark:bg-zinc-950 text-neutral-800 dark:text-zinc-200 transition-colors duration-300">
+      
+      {/* Left Column: Media Showcase (Hidden on Mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-zinc-950 overflow-hidden items-center justify-center">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-amber-500/10 blur-[120px] animate-pulse-slow" />
+        <div className="absolute inset-0 grid-bg opacity-20" />
+        
+        <img 
+          src="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200" 
+          alt="Bespoke wedding layout" 
+          className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity"
+        />
+        
+        <div className="relative z-10 max-w-lg p-12 text-left space-y-6">
+          <Link to="/" className="inline-flex items-center gap-2 text-amber-500 text-xs font-bold tracking-widest uppercase hover:underline">
+            <FiArrowLeft /> Back to Website
+          </Link>
+          <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tight text-white leading-tight">
+            Begin Your Event <br />
+            <span className="text-gradient-gold">Curation Journey</span>
+          </h2>
+          <p className="text-zinc-400 font-light leading-relaxed text-sm">
+            Create an account to gain instant access to your private client portal. Track task lists, upload references, approve culinary options, and review invoice ledgers.
+          </p>
+        </div>
+      </div>
+
+      {/* Right Column: Registration Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-12 relative overflow-hidden">
+        <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 rounded-full bg-amber-500/5 blur-[50px] pointer-events-none lg:hidden" />
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md space-y-8"
+        >
+          {/* Logo header */}
+          <div className="text-center lg:text-left space-y-2">
+            <Link to="/" className="inline-flex items-center gap-3 group select-none mb-4">
+              <span className="w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-neutral-950 shadow-md">
+                <Logo size={22} className="text-neutral-950" />
+              </span>
+              <div className="flex flex-col text-left">
+                <span className="font-heading font-bold text-lg tracking-wider text-neutral-900 dark:text-zinc-50">
+                  GOWTHAM
+                </span>
+                <span className="text-[8px] font-heading font-bold tracking-[0.25em] uppercase text-amber-500/90 -mt-1">
+                  EVENTS
+                </span>
+              </div>
+            </Link>
+            <h1 className="text-2xl md:text-3xl font-heading font-bold text-neutral-900 dark:text-zinc-100">
+              Create Client Account
+            </h1>
+            <p className="text-xs text-neutral-450 dark:text-zinc-500 font-light">
+              Submit details below. All fields are required for portal credentials.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Full Name */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-505 dark:text-zinc-500">
+                Full Name
+              </label>
+              <div className="relative">
+                <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-zinc-650" />
+                <input
+                  type="text"
+                  required
+                  placeholder="Sophia Laurent"
+                  {...register('name')}
+                  className="w-full bg-neutral-100 dark:bg-zinc-950 border border-neutral-200 dark:border-zinc-850 rounded-xl pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:border-amber-500/50 text-neutral-800 dark:text-zinc-200"
+                />
+              </div>
+              {errors.name && (
+                <p className="text-xs text-red-500 font-medium">{errors.name.message}</p>
+              )}
+            </div>
+
+            {/* Email Address */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-505 dark:text-zinc-500">
+                Email Address
+              </label>
+              <div className="relative">
+                <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-zinc-650" />
+                <input
+                  type="email"
+                  required
+                  placeholder="sophia@example.com"
+                  {...register('email')}
+                  className="w-full bg-neutral-100 dark:bg-zinc-950 border border-neutral-200 dark:border-zinc-850 rounded-xl pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:border-amber-500/50 text-neutral-800 dark:text-zinc-200"
+                />
+              </div>
+              {errors.email && (
+                <p className="text-xs text-red-500 font-medium">{errors.email.message}</p>
+              )}
+            </div>
+
+            {/* Phone Number */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-505 dark:text-zinc-500">
+                Phone Number
+              </label>
+              <div className="relative">
+                <FiPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-zinc-650" />
+                <input
+                  type="tel"
+                  required
+                  placeholder="+1 (555) 000-0000"
+                  {...register('phone')}
+                  className="w-full bg-neutral-100 dark:bg-zinc-950 border border-neutral-200 dark:border-zinc-850 rounded-xl pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:border-amber-500/50 text-neutral-800 dark:text-zinc-200"
+                />
+              </div>
+              {errors.phone && (
+                <p className="text-xs text-red-500 font-medium">{errors.phone.message}</p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-505 dark:text-zinc-500">
+                Password
+              </label>
+              <div className="relative">
+                <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-zinc-650" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                  {...register('password')}
+                  className="w-full bg-neutral-100 dark:bg-zinc-950 border border-neutral-200 dark:border-zinc-850 rounded-xl pl-11 pr-11 py-2.5 text-sm focus:outline-none focus:border-amber-500/50 text-neutral-800 dark:text-zinc-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-zinc-650"
+                >
+                  {showPassword ? <FiEyeOff size={15} /> : <FiEye size={15} />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-xs text-red-500 font-medium">{errors.password.message}</p>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-505 dark:text-zinc-500">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-zinc-650" />
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  required
+                  placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                  {...register('confirmPassword')}
+                  className="w-full bg-neutral-100 dark:bg-zinc-950 border border-neutral-200 dark:border-zinc-850 rounded-xl pl-11 pr-11 py-2.5 text-sm focus:outline-none focus:border-amber-500/50 text-neutral-800 dark:text-zinc-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-zinc-650"
+                >
+                  {showConfirmPassword ? <FiEyeOff size={15} /> : <FiEye size={15} />}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-xs text-red-500 font-medium">{errors.confirmPassword.message}</p>
+              )}
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full inline-flex items-center justify-center px-6 py-3 rounded-full text-xs font-heading font-bold tracking-widest uppercase bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-neutral-950 shadow-md hover:shadow-amber-500/20 active:scale-95 disabled:opacity-50 transition-all duration-300 cursor-pointer"
+            >
+              {isLoading ? (
+                <FiLoader className="animate-spin text-lg" />
+              ) : (
+                'Create Account'
+              )}
+            </button>
+          </form>
+
+          {/* Login Redirection */}
+          <div className="text-center text-xs text-neutral-500 dark:text-zinc-500">
+            Already have an account?{' '}
+            <Link to="/login" className="text-amber-500 font-semibold hover:underline">
+              Log In
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+
+    </div>
+  );
+};

@@ -1,0 +1,180 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+  
+  --color-gold-50: #fdfaf3;
+  --color-gold-100: #faeed4;
+  --color-gold-200: #f4dca8;
+  --color-gold-300: #ecc474;
+  --color-gold-400: #e2ac45;
+  --color-gold-500: #c9a24b;
+  --color-gold-600: #a97d1f;
+  --color-gold-700: #885f18;
+  --color-gold-800: #6d4b17;
+  --color-gold-900: #583c16;
+  
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-spin-slow: spin 25s linear infinite;
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+  }
+}
+
+/* ==========================================================================
+   Design Tokens - Dark Luxury Base & Warm Gold Accent
+   ========================================================================== */
+
+:root[data-theme="dark"],
+html.dark {
+  --bg-primary: #0c0a08;
+  --bg-secondary: #15120e;
+  --surface-glass: rgba(24, 20, 16, 0.65);
+  --text-primary: #f3ece0;
+  --text-secondary: rgba(243, 236, 224, 0.68);
+  --text-faint: rgba(243, 236, 224, 0.44);
+  --border-primary: rgba(243, 236, 224, 0.12);
+  --border-secondary: rgba(243, 236, 224, 0.06);
+  --accent-gold: #c9a24b;
+  --accent-gold-soft: rgba(201, 162, 75, 0.35);
+  --accent: #c9a24b;
+  --accent-hover: #dfb75f;
+  --accent-rgb: 201, 162, 75;
+  --glass-bg: rgba(24, 20, 16, 0.7);
+  --glass-border: rgba(243, 236, 224, 0.12);
+  --shadow-premium: 0 16px 48px -12px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(201, 162, 75, 0.06);
+  --glow-color: rgba(201, 162, 75, 0.15);
+}
+
+:root[data-theme="light"],
+html.light {
+  --bg-primary: #f6f2ea;
+  --bg-secondary: #ffffff;
+  --surface-glass: rgba(255, 255, 255, 0.7);
+  --text-primary: #1b1712;
+  --text-secondary: rgba(27, 23, 18, 0.68);
+  --text-faint: rgba(27, 23, 18, 0.46);
+  --border-primary: rgba(27, 23, 18, 0.12);
+  --border-secondary: rgba(27, 23, 18, 0.06);
+  --accent-gold: #a97d1f;
+  --accent-gold-soft: rgba(169, 125, 31, 0.28);
+  --accent: #a97d1f;
+  --accent-hover: #c49429;
+  --accent-rgb: 169, 125, 31;
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(27, 23, 18, 0.1);
+  --shadow-premium: 0 16px 40px -12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --glow-color: rgba(169, 125, 31, 0.1);
+}
+
+/* Base style resets */
+html {
+  scroll-behavior: auto;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+/* Lenis smooth scroll adjustments */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overflow: clip;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+  border: 2px solid var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-gold);
+}
+
+/* ==========================================================================
+   Luxury Utility Classes
+   ========================================================================== */
+
+.glassmorphism {
+  background: var(--surface-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-primary);
+}
+
+.premium-shadow {
+  box-shadow: var(--shadow-premium);
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--accent-gold) 0%, #f4dca8 50%, var(--accent-gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow-card {
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-secondary);
+}
+
+.glow-card:hover {
+  border-color: var(--accent-gold-soft);
+  box-shadow: 0 12px 36px -10px var(--glow-color), var(--shadow-premium);
+  transform: translateY(-4px);
+}
+
+.grid-bg {
+  background-size: 48px 48px;
+  background-image: 
+    linear-gradient(to right, var(--border-secondary) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border-secondary) 1px, transparent 1px);
+}
+
+/* 3D Canvas Container */
+.webgl-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.webgl-container canvas {
+  pointer-events: auto;
+}
