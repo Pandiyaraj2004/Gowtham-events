@@ -1,10 +1,10 @@
 // src/journey/content/zoneRegistry.ts
-// The single source of truth for scroll progress -> act zones, labels, routes, and SEO
+// The single source of truth for scroll zones, labels, routes, and SEO
 
 export interface ZoneDefinition {
   id: 'arrival' | 'story' | 'offerings' | 'proof' | 'moments' | 'whatsnext' | 'begin';
   label: string;
-  actRoman: string;
+  subtitle: string;
   range: [number, number];
   route: string;
   title: string;
@@ -15,7 +15,7 @@ export const ZONES: readonly ZoneDefinition[] = [
   {
     id: 'arrival',
     label: 'Home',
-    actRoman: 'Act I',
+    subtitle: 'Spatial Scenography',
     range: [0.0, 0.14],
     route: '/',
     title: 'Gowtham Events — Luxury Event Design & Coordination',
@@ -24,7 +24,7 @@ export const ZONES: readonly ZoneDefinition[] = [
   {
     id: 'story',
     label: 'About',
-    actRoman: 'Act II',
+    subtitle: 'Our Story & Legacy',
     range: [0.14, 0.3],
     route: '/about',
     title: 'Our Story & Legacy — Gowtham Events',
@@ -33,7 +33,7 @@ export const ZONES: readonly ZoneDefinition[] = [
   {
     id: 'offerings',
     label: 'Services',
-    actRoman: 'Act III',
+    subtitle: 'Disciplines & Production',
     range: [0.3, 0.46],
     route: '/services',
     title: 'Bespoke Curations & Disciplines — Gowtham Events',
@@ -42,7 +42,7 @@ export const ZONES: readonly ZoneDefinition[] = [
   {
     id: 'proof',
     label: 'Portfolio',
-    actRoman: 'Act IV',
+    subtitle: 'Masterpiece Archive',
     range: [0.46, 0.64],
     route: '/portfolio',
     title: 'Masterpiece Archive — Gowtham Events',
@@ -51,7 +51,7 @@ export const ZONES: readonly ZoneDefinition[] = [
   {
     id: 'moments',
     label: 'Gallery',
-    actRoman: 'Act V',
+    subtitle: 'Atmospheric Moments',
     range: [0.64, 0.78],
     route: '/gallery',
     title: 'Visual Moments & Atmosphere — Gowtham Events',
@@ -60,7 +60,7 @@ export const ZONES: readonly ZoneDefinition[] = [
   {
     id: 'whatsnext',
     label: 'Upcoming',
-    actRoman: 'Act VI',
+    subtitle: 'Forward Horizons',
     range: [0.78, 0.9],
     route: '/upcoming-events',
     title: 'Calendar & Upcoming Galas — Gowtham Events',
@@ -69,7 +69,7 @@ export const ZONES: readonly ZoneDefinition[] = [
   {
     id: 'begin',
     label: 'Contact',
-    actRoman: 'Act VII',
+    subtitle: 'Private Consultation',
     range: [0.9, 1.0],
     route: '/contact',
     title: 'Initiate Consultation — Gowtham Events',

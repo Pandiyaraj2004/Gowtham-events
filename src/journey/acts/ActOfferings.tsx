@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { motion } from 'framer-motion';
 import { services } from '../../data/mockData';
 import { FiCheck, FiArrowRight, FiLayers, FiShield } from 'react-icons/fi';
@@ -7,7 +7,7 @@ interface ActOfferingsProps {
   onScrollToAct: (actId: string) => void;
 }
 
-export const ActOfferings: React.FC<ActOfferingsProps> = ({ onScrollToAct }) => {
+export const ActOfferings: React.FC<ActOfferingsProps> = memo(({ onScrollToAct }) => {
   const [selectedService, setSelectedService] = useState<string>(services[0].id);
 
   const activeServiceData = services.find((s) => s.id === selectedService) || services[0];
@@ -27,12 +27,11 @@ export const ActOfferings: React.FC<ActOfferingsProps> = ({ onScrollToAct }) => 
       className="relative min-h-[160vh] py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 select-none pointer-events-none"
     >
       <div className="space-y-20 pointer-events-auto">
-        
         {/* Header */}
         <div className="max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25">
             <span className="text-[10px] font-heading font-bold uppercase tracking-[0.25em] text-amber-500">
-              Act III &bull; Bespoke Curations & Disciplines
+              Bespoke Curations & Production Disciplines
             </span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-neutral-900 dark:text-zinc-50 leading-tight">
@@ -46,7 +45,6 @@ export const ActOfferings: React.FC<ActOfferingsProps> = ({ onScrollToAct }) => 
 
         {/* Interactive Discipline Selector & Focus Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
           {/* Left: Discipline Quick Tabs (5 cols) */}
           <div className="lg:col-span-5 space-y-2">
             <span className="text-[10px] font-heading font-bold uppercase tracking-widest text-neutral-400 dark:text-zinc-500 block mb-3">
@@ -136,7 +134,6 @@ export const ActOfferings: React.FC<ActOfferingsProps> = ({ onScrollToAct }) => 
               </button>
             </div>
           </motion.div>
-
         </div>
 
         {/* Global Production Standards Banner */}
@@ -164,8 +161,9 @@ export const ActOfferings: React.FC<ActOfferingsProps> = ({ onScrollToAct }) => 
             ))}
           </div>
         </div>
-
       </div>
     </section>
   );
-};
+});
+
+ActOfferings.displayName = 'ActOfferings';

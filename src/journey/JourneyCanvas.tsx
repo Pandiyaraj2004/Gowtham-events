@@ -1,29 +1,30 @@
-import React, { useRef, useMemo, Suspense } from 'react';
+import React, { useRef, useMemo, memo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, Sparkles, MeshTransmissionMaterial } from '@react-three/drei';
+import { Float, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 import { cameraCurve, lookAtCurve } from './cameraPath';
 import { isZoneActive } from './zoneManager';
+import { ZoneId } from './content/zoneRegistry';
 import { createAmbientFieldMaterial } from './shaders/ambientField';
-import { usePerfTier, PerfTier } from '../components/PerfTierProvider';
+import { usePerfTier } from '../components/PerfTierProvider';
 import { DISCIPLINE_EMBLEMS } from './content/ActOfferings.content';
+import { getJourneyProgress } from './useJourneyScroll';
 
 // ==========================================
-// 1. Camera Controller Rig
+// 1. Camera Controller Rig (reads progress in useFrame directly)
 // ==========================================
 interface CameraRigProps {
-  progress: number;
   reducedMotion: boolean;
 }
 
-const JourneyCameraRig: React.FC<CameraRigProps> = ({ progress, reducedMotion }) => {
+const JourneyCameraRig: React.FC<CameraRigProps> = ({ reducedMotion }) => {
   const { camera, pointer } = useThree();
-  const currentPos = useRef(new THREE.Vector3());
-  const currentLookAt = useRef(new THREE.Vector3());
+  const currentPos = useRef(new THREE.Vector3(0, 1.6, 6));
+  const currentLookAt = useRef(new THREE.Vector3(0, 1.3, 0));
   const mouseOffset = useRef(new THREE.Vector2(0, 0));
 
   useFrame((_, delta) => {
-    const t = Math.max(0, Math.min(1, progress));
+    const t = getJourneyProgress();
 
     // Spline trajectory points
     const targetPos = cameraCurve.getPointAt(t);
@@ -31,16 +32,17 @@ const JourneyCameraRig: React.FC<CameraRigProps> = ({ progress, reducedMotion })
 
     // Cursor Parallax offset (damped)
     if (!reducedMotion) {
-      mouseOffset.current.x = THREE.MathUtils.damp(mouseOffset.current.x, pointer.x * 0.4, 4, delta);
-      mouseOffset.current.y = THREE.MathUtils.damp(mouseOffset.current.y, pointer.y * 0.25, 4, delta);
+      mouseOffset.current.x = THREE.MathUtils.damp(mouseOffset.current.x, pointer.x * 0.35, 4, delta);
+      mouseOffset.current.y = THREE.MathUtils.damp(mouseOffset.current.y, pointer.y * 0.2, 4, delta);
     }
 
     targetPos.x += mouseOffset.current.x;
     targetPos.y += mouseOffset.current.y;
 
     // Smooth camera motion
-    currentPos.current.lerp(targetPos, Math.min(1, delta * 5));
-    currentLookAt.current.lerp(targetLookAt, Math.min(1, delta * 5));
+    const lerpFactor = Math.min(1, delta * 6);
+    currentPos.current.lerp(targetPos, lerpFactor);
+    currentLookAt.current.lerp(targetLookAt, lerpFactor);
 
     camera.position.copy(currentPos.current);
     camera.lookAt(currentLookAt.current);
@@ -52,19 +54,19 @@ const JourneyCameraRig: React.FC<CameraRigProps> = ({ progress, reducedMotion })
 // ==========================================
 // 2. Ambient Shader Background Field
 // ==========================================
-const AmbientShaderPlane: React.FC<{ progress: number }> = ({ progress }) => {
+const AmbientShaderPlane: React.FC = () => {
   const { camera } = useThree();
   const meshRef = useRef<THREE.Mesh>(null);
   const material = useMemo(() => createAmbientFieldMaterial(), []);
 
   useFrame((state) => {
+    const p = getJourneyProgress();
     if (meshRef.current) {
-      // Keep background positioned directly behind camera along look vector
       meshRef.current.position.copy(camera.position);
       meshRef.current.quaternion.copy(camera.quaternion);
       meshRef.current.translateZ(-30);
     }
-    material.uniforms.uProgress.value = progress;
+    material.uniforms.uProgress.value = p;
     material.uniforms.uTime.value = state.clock.elapsedTime;
   });
 
@@ -76,9 +78,30 @@ const AmbientShaderPlane: React.FC<{ progress: number }> = ({ progress }) => {
 };
 
 // ==========================================
-// 3. Act I: Arrival Centerpiece Arch
+// High-Performance Visibility Container
+// Keeps geometries in GPU memory without unmounting
 // ==========================================
-const ActIArrival3D: React.FC = () => {
+const ZoneContainer: React.FC<{
+  zoneId: ZoneId;
+  children: React.ReactNode;
+}> = ({ zoneId, children }) => {
+  const groupRef = useRef<THREE.Group>(null);
+
+  useFrame(() => {
+    if (groupRef.current) {
+      const p = getJourneyProgress();
+      const active = isZoneActive(zoneId, p);
+      groupRef.current.visible = active;
+    }
+  });
+
+  return <group ref={groupRef}>{children}</group>;
+};
+
+// ==========================================
+// 3. Section 1: Arrival Centerpiece Arch
+// ==========================================
+const Arrival3D: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null);
   const goldMaterial = useMemo(
     () =>
@@ -89,6 +112,20 @@ const ActIArrival3D: React.FC = () => {
         clearcoat: 1.0,
         clearcoatRoughness: 0.1,
         reflectivity: 0.9,
+      }),
+    []
+  );
+
+  const glassRingMaterial = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color('#faeed4'),
+        metalness: 0.2,
+        roughness: 0.1,
+        transmission: 0.6,
+        transparent: true,
+        opacity: 0.75,
+        clearcoat: 1.0,
       }),
     []
   );
@@ -105,46 +142,36 @@ const ActIArrival3D: React.FC = () => {
         <group ref={groupRef}>
           {/* Main Continuous GE Proscenium Torus */}
           <mesh material={goldMaterial}>
-            <torusGeometry args={[2.2, 0.08, 32, 100]} />
+            <torusGeometry args={[2.2, 0.08, 24, 64]} />
           </mesh>
 
           {/* Interlocked Orthogonal Arch */}
           <mesh material={goldMaterial} rotation={[Math.PI / 3, 0, Math.PI / 4]}>
-            <torusGeometry args={[1.8, 0.06, 32, 100]} />
+            <torusGeometry args={[1.8, 0.06, 24, 64]} />
           </mesh>
 
           {/* Inner Optical Transmission Lens Ring */}
-          <mesh>
-            <torusGeometry args={[1.3, 0.05, 32, 80]} />
-            <MeshTransmissionMaterial
-              backside
-              samples={4}
-              thickness={0.5}
-              chromaticAberration={0.06}
-              anisotropy={0.2}
-              distortion={0.3}
-              color="#faeed4"
-              ior={1.4}
-            />
+          <mesh material={glassRingMaterial}>
+            <torusGeometry args={[1.3, 0.05, 24, 64]} />
           </mesh>
 
-          {/* Core Gold Monogram Sphere */}
+          {/* Core Gold Monogram Octahedron */}
           <mesh position={[0, 0, 0]} material={goldMaterial}>
-            <octahedronGeometry args={[0.3, 2]} />
+            <octahedronGeometry args={[0.3, 1]} />
           </mesh>
         </group>
       </Float>
 
       {/* Floating Gold Sparkle Field */}
-      <Sparkles count={45} scale={[6, 6, 6]} size={2.5} speed={0.4} color="#f4dca8" />
+      <Sparkles count={35} scale={[6, 6, 6]} size={2.2} speed={0.4} color="#f4dca8" />
     </group>
   );
 };
 
 // ==========================================
-// 4. Act II: Story Milestone Helix
+// 4. Section 2: Story Milestone Helix
 // ==========================================
-const ActIIStory3D: React.FC = () => {
+const Story3D: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null);
   const goldMaterial = useMemo(
     () =>
@@ -153,15 +180,15 @@ const ActIIStory3D: React.FC = () => {
         metalness: 0.9,
         roughness: 0.2,
         emissive: new THREE.Color('#c9a24b'),
-        emissiveIntensity: 0.3,
+        emissiveIntensity: 0.25,
       }),
     []
   );
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.1;
-      groupRef.current.rotation.x = Math.sin(Date.now() * 0.001) * 0.1;
+      groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.5) * 0.08;
     }
   });
 
@@ -178,31 +205,41 @@ const ActIIStory3D: React.FC = () => {
       <group ref={groupRef}>
         {/* Helical Ring */}
         <mesh rotation={[Math.PI / 4, 0, 0]}>
-          <torusGeometry args={[2.5, 0.04, 24, 80]} />
+          <torusGeometry args={[2.5, 0.04, 20, 64]} />
           <meshStandardMaterial color="#c9a24b" metalness={0.9} roughness={0.2} />
         </mesh>
 
         {/* Milestone Node Spheres */}
         {nodePositions.map((pos, idx) => (
           <mesh key={idx} position={pos} material={goldMaterial}>
-            <sphereGeometry args={[0.16, 24, 24]} />
+            <sphereGeometry args={[0.16, 16, 16]} />
           </mesh>
         ))}
       </group>
-      <Sparkles count={30} scale={[5, 4, 5]} size={2} speed={0.3} color="#ecc474" />
+      <Sparkles count={25} scale={[5, 4, 5]} size={2} speed={0.3} color="#ecc474" />
     </group>
   );
 };
 
 // ==========================================
-// 5. Act III: Offerings Physical Emblems
+// 5. Section 3: Offerings Physical Emblems
 // ==========================================
-const ActIIIOfferings3D: React.FC = () => {
+const Offerings3D: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null);
+  const goldMaterial = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color('#c9a24b'),
+        metalness: 0.95,
+        roughness: 0.15,
+        clearcoat: 1.0,
+      }),
+    []
+  );
 
   useFrame((_, delta) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.2;
+      groupRef.current.rotation.y += delta * 0.18;
     }
   });
 
@@ -213,7 +250,7 @@ const ActIIIOfferings3D: React.FC = () => {
       <group ref={groupRef}>
         {/* Outer Orbit Guide Ring */}
         <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[3.2, 0.03, 16, 80]} />
+          <torusGeometry args={[3.2, 0.03, 16, 64]} />
           <meshStandardMaterial color="#a97d1f" metalness={0.95} roughness={0.2} />
         </mesh>
 
@@ -225,78 +262,70 @@ const ActIIIOfferings3D: React.FC = () => {
           const z = Math.sin(angle) * radius;
 
           return (
-            <mesh key={key} position={[x, Math.sin(i * 1.5) * 0.4, z]}>
-              <octahedronGeometry args={[0.28, 0]} />
-              <meshPhysicalMaterial
-                color="#c9a24b"
-                metalness={0.95}
-                roughness={0.15}
-                clearcoat={1.0}
-              />
+            <mesh key={key} position={[x, Math.sin(i * 1.5) * 0.35, z]} material={goldMaterial}>
+              <octahedronGeometry args={[0.26, 0]} />
             </mesh>
           );
         })}
 
-        {/* Central Core Sphere */}
+        {/* Central Core */}
         <mesh>
-          <dodecahedronGeometry args={[0.7, 0]} />
+          <dodecahedronGeometry args={[0.65, 0]} />
           <meshPhysicalMaterial
             color="#dfb75f"
             metalness={0.8}
-            roughness={0.1}
-            transmission={0.4}
-            thickness={0.8}
+            roughness={0.15}
+            clearcoat={1.0}
           />
         </mesh>
       </group>
 
-      <Sparkles count={40} scale={[7, 4, 7]} size={2.2} speed={0.4} color="#fdfaf3" />
+      <Sparkles count={30} scale={[6, 4, 6]} size={2} speed={0.35} color="#fdfaf3" />
     </group>
   );
 };
 
 // ==========================================
-// 6. Act IV & V: Proof & Moments 3D Depth Planes
+// 6. Sections 4 & 5: Proof & Moments 3D Depth Planes
 // ==========================================
-const ActIVProof3D: React.FC = () => {
+const Proof3D: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.15;
+      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.12;
     }
   });
 
   return (
     <group position={[-1.0, 1.2, -12]}>
       <group ref={groupRef}>
-        {/* Curated Frame Ring */}
         <mesh rotation={[0, 0, Math.PI / 6]}>
-          <torusGeometry args={[2.8, 0.05, 16, 64]} />
+          <torusGeometry args={[2.8, 0.05, 16, 48]} />
           <meshStandardMaterial color="#c9a24b" metalness={0.95} roughness={0.15} />
         </mesh>
         <mesh position={[0, 0, -0.5]}>
-          <ringGeometry args={[1.5, 2.0, 32]} />
+          <ringGeometry args={[1.5, 2.0, 24]} />
           <meshStandardMaterial color="#a97d1f" metalness={0.8} roughness={0.3} side={THREE.DoubleSide} />
         </mesh>
       </group>
-      <Sparkles count={35} scale={[6, 5, 6]} size={2} speed={0.3} color="#ecc474" />
+      <Sparkles count={25} scale={[5, 4, 5]} size={2} speed={0.25} color="#ecc474" />
     </group>
   );
 };
 
-const ActVMoments3D: React.FC = () => {
+const Moments3D: React.FC = () => {
   return (
     <group position={[0, 0.8, -16]}>
-      <Sparkles count={50} scale={[8, 6, 8]} size={2.5} speed={0.35} color="#c9a24b" />
+      <Sparkles count={35} scale={[7, 5, 7]} size={2.2} speed={0.3} color="#c9a24b" />
     </group>
   );
 };
 
 // ==========================================
-// 7. Act VI & VII: What's Next & Begin Atmosphere
+// 7. Sections 6 & 7: What's Next & Begin Atmosphere
 // ==========================================
-const ActVIWhatsNext3D: React.FC = () => {
+const WhatsNext3D: React.FC = () => {
   const ref = useRef<THREE.Group>(null);
 
   useFrame((_, delta) => {
@@ -309,23 +338,23 @@ const ActVIWhatsNext3D: React.FC = () => {
     <group position={[0.5, 1.0, -20]}>
       <group ref={ref}>
         <mesh>
-          <torusGeometry args={[3.5, 0.04, 16, 64]} />
+          <torusGeometry args={[3.5, 0.04, 16, 48]} />
           <meshStandardMaterial color="#c9a24b" metalness={0.9} roughness={0.2} />
         </mesh>
       </group>
-      <Sparkles count={35} scale={[7, 5, 7]} size={2.2} speed={0.3} color="#f4dca8" />
+      <Sparkles count={25} scale={[6, 4, 6]} size={2} speed={0.25} color="#f4dca8" />
     </group>
   );
 };
 
-const ActVIIBegin3D: React.FC = () => {
+const Begin3D: React.FC = () => {
   return (
     <group position={[0, 1.3, -24]}>
       <mesh position={[0, 0, 0]}>
-        <torusGeometry args={[2.0, 0.04, 24, 64]} />
+        <torusGeometry args={[2.0, 0.04, 20, 48]} />
         <meshStandardMaterial color="#c9a24b" metalness={0.95} roughness={0.15} />
       </mesh>
-      <Sparkles count={40} scale={[6, 6, 6]} size={2.5} speed={0.25} color="#ecc474" />
+      <Sparkles count={30} scale={[5, 5, 5]} size={2.2} speed={0.2} color="#ecc474" />
     </group>
   );
 };
@@ -334,51 +363,62 @@ const ActVIIBegin3D: React.FC = () => {
 // 8. Main Scene Coordinator
 // ==========================================
 interface SceneContentProps {
-  progress: number;
-  tier: PerfTier;
   reducedMotion: boolean;
 }
 
-const SceneContent: React.FC<SceneContentProps> = ({ progress, tier: _tier, reducedMotion }) => {
+const SceneContent: React.FC<SceneContentProps> = ({ reducedMotion }) => {
   return (
     <>
       {/* 1. Camera Spline Controller */}
-      <JourneyCameraRig progress={progress} reducedMotion={reducedMotion} />
+      <JourneyCameraRig reducedMotion={reducedMotion} />
 
       {/* 2. Ambient Procedural Background */}
-      <AmbientShaderPlane progress={progress} />
+      <AmbientShaderPlane />
 
       {/* 3. Physically-Based Lighting Rig */}
       <ambientLight intensity={0.65} color="#faeed4" />
-      <directionalLight position={[10, 15, 10]} intensity={1.8} color="#ffffff" castShadow />
+      <directionalLight position={[10, 15, 10]} intensity={1.8} color="#ffffff" />
       <directionalLight position={[-10, 5, -10]} intensity={0.8} color="#c9a24b" />
       <pointLight position={[0, 2, 0]} intensity={1.2} color="#ecc474" distance={15} />
 
-      {/* 4. Dynamic Zone Geometries (Mount/Dispose via Scroll Proximity) */}
-      <Suspense fallback={null}>
-        {isZoneActive('arrival', progress) && <ActIArrival3D />}
-        {isZoneActive('story', progress) && <ActIIStory3D />}
-        {isZoneActive('offerings', progress) && <ActIIIOfferings3D />}
-        {isZoneActive('proof', progress) && <ActIVProof3D />}
-        {isZoneActive('moments', progress) && <ActVMoments3D />}
-        {isZoneActive('whatsnext', progress) && <ActVIWhatsNext3D />}
-        {isZoneActive('begin', progress) && <ActVIIBegin3D />}
-      </Suspense>
+      {/* 4. Persistent 3D Geometries with zero-cost visibility toggling */}
+      <ZoneContainer zoneId="arrival">
+        <Arrival3D />
+      </ZoneContainer>
+
+      <ZoneContainer zoneId="story">
+        <Story3D />
+      </ZoneContainer>
+
+      <ZoneContainer zoneId="offerings">
+        <Offerings3D />
+      </ZoneContainer>
+
+      <ZoneContainer zoneId="proof">
+        <Proof3D />
+      </ZoneContainer>
+
+      <ZoneContainer zoneId="moments">
+        <Moments3D />
+      </ZoneContainer>
+
+      <ZoneContainer zoneId="whatsnext">
+        <WhatsNext3D />
+      </ZoneContainer>
+
+      <ZoneContainer zoneId="begin">
+        <Begin3D />
+      </ZoneContainer>
     </>
   );
 };
 
 // ==========================================
-// 9. Root Canvas Component
+// 9. Root Canvas Component (Memoized, zero re-renders during scroll)
 // ==========================================
-interface JourneyCanvasProps {
-  progress: number;
-}
-
-export const JourneyCanvas: React.FC<JourneyCanvasProps> = ({ progress }) => {
+export const JourneyCanvas: React.FC = memo(() => {
   const { tier, reducedMotion, dpr } = usePerfTier();
 
-  // On Low tier or prefers-reduced-motion, do not mount WebGL canvas to preserve resources
   if (tier === 'low' || reducedMotion) {
     return (
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-gradient-to-b from-zinc-950 via-neutral-950 to-zinc-950">
@@ -391,19 +431,22 @@ export const JourneyCanvas: React.FC<JourneyCanvasProps> = ({ progress }) => {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-black">
       <Canvas
-        camera={{ position: [0, 1.6, 6], fov: 45, near: 0.1, far: 100 }}
+        camera={{ position: [0, 1.6, 6], fov: 45, near: 0.1, far: 80 }}
         dpr={dpr}
         gl={{
           antialias: tier === 'high',
           alpha: false,
           powerPreference: 'high-performance',
           stencil: false,
+          depth: true,
         }}
       >
-        <SceneContent progress={progress} tier={tier} reducedMotion={reducedMotion} />
+        <SceneContent reducedMotion={reducedMotion} />
       </Canvas>
     </div>
   );
-};
+});
+
+JourneyCanvas.displayName = 'JourneyCanvas';
 
 export default JourneyCanvas;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../../data/db';
 import { Project } from '../../types';
@@ -10,7 +10,7 @@ interface ActProofProps {
   onScrollToAct: (actId: string) => void;
 }
 
-export const ActProof: React.FC<ActProofProps> = ({ onScrollToAct }) => {
+export const ActProof: React.FC<ActProofProps> = memo(({ onScrollToAct }) => {
   const [projectList, setProjectList] = useState<Project[]>(defaultProjects);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [activeProject, setActiveProject] = useState<Project | null>(null);
@@ -36,9 +36,9 @@ export const ActProof: React.FC<ActProofProps> = ({ onScrollToAct }) => {
   const filteredProjects = selectedCategory === 'All'
     ? projectList
     : projectList.filter((p) =>
-        (p.category || '').toLowerCase().includes(selectedCategory.toLowerCase()) ||
-        (p.name || '').toLowerCase().includes(selectedCategory.toLowerCase())
-      );
+      (p.category || '').toLowerCase().includes(selectedCategory.toLowerCase()) ||
+      (p.name || '').toLowerCase().includes(selectedCategory.toLowerCase())
+    );
 
   const allImages = projectList.map((p) => p.image).filter(Boolean);
 
@@ -54,13 +54,12 @@ export const ActProof: React.FC<ActProofProps> = ({ onScrollToAct }) => {
       className="relative min-h-[180vh] py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 select-none pointer-events-none"
     >
       <div className="space-y-16 pointer-events-auto">
-        
         {/* Header & Filter Tabs */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-neutral-200 dark:border-zinc-800 pb-8">
           <div className="max-w-2xl space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25">
               <span className="text-[10px] font-heading font-bold uppercase tracking-[0.25em] text-amber-500">
-                Act IV &bull; Masterpiece Archive
+                Masterpiece Archive & Global Productions
               </span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-neutral-900 dark:text-zinc-50 leading-tight">
@@ -112,10 +111,11 @@ export const ActProof: React.FC<ActProofProps> = ({ onScrollToAct }) => {
                   alt={project.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-                
-                {/* Category & Location Badges */}
+
+                {/* Category Badge */}
                 <div className="absolute top-4 left-4 flex gap-2">
                   <span className="px-3 py-1 rounded-full text-[10px] font-heading font-bold uppercase tracking-wider bg-black/60 backdrop-blur-md text-amber-400 border border-amber-500/30">
                     {project.category}
@@ -276,8 +276,9 @@ export const ActProof: React.FC<ActProofProps> = ({ onScrollToAct }) => {
           onPrev={() => setLightboxIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1))}
           onNext={() => setLightboxIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0))}
         />
-
       </div>
     </section>
   );
-};
+});
+
+ActProof.displayName = 'ActProof';

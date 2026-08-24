@@ -71,11 +71,14 @@ html.light {
   --glow-color: rgba(169, 125, 31, 0.1);
 }
 
-/* Base style resets */
+/* Base style resets & hardware acceleration */
 html {
   scroll-behavior: auto;
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -83,6 +86,7 @@ body {
   color: var(--text-primary);
   font-family: var(--font-sans);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* Lenis smooth scroll adjustments */
@@ -108,7 +112,7 @@ html.lenis, html.lenis body {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -118,7 +122,6 @@ html.lenis, html.lenis body {
 ::-webkit-scrollbar-thumb {
   background: var(--border-primary);
   border-radius: 4px;
-  border: 2px solid var(--bg-primary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -149,15 +152,17 @@ html.lenis, html.lenis body {
 
 .glow-card {
   position: relative;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
   border: 1px solid var(--border-primary);
   background-color: var(--bg-secondary);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .glow-card:hover {
   border-color: var(--accent-gold-soft);
   box-shadow: 0 12px 36px -10px var(--glow-color), var(--shadow-premium);
-  transform: translateY(-4px);
+  transform: translateY(-4px) translateZ(0);
 }
 
 .grid-bg {

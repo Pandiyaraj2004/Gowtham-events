@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useJourneyScroll } from './useJourneyScroll';
+import { useJourneyScrollEngine } from './useJourneyScroll';
 import { NavScrollSpy } from '../components/NavScrollSpy';
 import { JourneyCanvas } from './JourneyCanvas';
 import { ActArrival } from './acts/ActArrival';
@@ -15,7 +15,8 @@ import { FiArrowUp, FiInstagram, FiLinkedin, FiTwitter } from 'react-icons/fi';
 import { useSEO } from '../hooks/useSEO';
 
 export const Journey: React.FC = () => {
-  const progress = useJourneyScroll();
+  // Initialize Lenis + GSAP engine without triggering root re-renders on scroll
+  useJourneyScrollEngine();
   const location = useLocation();
 
   useSEO({
@@ -29,7 +30,7 @@ export const Journey: React.FC = () => {
     if (targetEl) {
       const win = window as any;
       if (win.__lenis) {
-        win.__lenis.scrollTo(targetEl, { offset: 0, duration: 1.4 });
+        win.__lenis.scrollTo(targetEl, { offset: 0, duration: 1.2 });
       } else {
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
@@ -40,24 +41,22 @@ export const Journey: React.FC = () => {
   useEffect(() => {
     const target = (location.state as any)?.scrollTo;
     if (target) {
-      // Delay slightly for initial render & Lenis initialization
       const timer = setTimeout(() => {
         handleScrollToAct(target);
-      }, 300);
+      }, 200);
       return () => clearTimeout(timer);
     }
   }, [location.state, handleScrollToAct]);
 
   return (
     <div className="relative min-h-screen bg-zinc-50 dark:bg-zinc-950 text-neutral-800 dark:text-zinc-200 selection:bg-amber-500 selection:text-neutral-950 transition-colors duration-300">
-      
       {/* 1. Fixed Header Navigation with Scroll-Spy */}
-      <NavScrollSpy progress={progress} onNavigate={handleScrollToAct} />
+      <NavScrollSpy onNavigate={handleScrollToAct} />
 
       {/* 2. Single Persistent 3D WebGL World Canvas */}
-      <JourneyCanvas progress={progress} />
+      <JourneyCanvas />
 
-      {/* 3. Seven Narrative Acts (HTML Overlay Layer) */}
+      {/* 3. Seven Narrative Sections (HTML Overlay Layer) */}
       <main className="relative z-10 w-full overflow-hidden">
         <ActArrival onScrollToAct={handleScrollToAct} />
         <ActStory />
@@ -71,7 +70,6 @@ export const Journey: React.FC = () => {
       {/* 4. Luxury Footer */}
       <footer className="relative z-10 bg-black/80 dark:bg-black/90 backdrop-blur-2xl border-t border-white/10 dark:border-zinc-900 text-zinc-300 py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          
           {/* Brand & Monogram */}
           <div className="flex items-center gap-3">
             <span className="w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-neutral-950 shadow-md">
@@ -111,10 +109,8 @@ export const Journey: React.FC = () => {
               <FiArrowUp size={15} />
             </button>
           </div>
-
         </div>
       </footer>
-
     </div>
   );
 };

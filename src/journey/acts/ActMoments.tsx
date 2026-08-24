@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { motion } from 'framer-motion';
 import { FiMaximize2 } from 'react-icons/fi';
 import { Lightbox } from '../../components/Lightbox';
@@ -56,7 +56,7 @@ const GALLERY_MOMENTS: MomentItem[] = [
   },
 ];
 
-export const ActMoments: React.FC = () => {
+export const ActMoments: React.FC = memo(() => {
   const [selectedTag, setSelectedTag] = useState<string>('All');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -66,10 +66,10 @@ export const ActMoments: React.FC = () => {
   const filteredItems = selectedTag === 'All'
     ? GALLERY_MOMENTS
     : GALLERY_MOMENTS.filter(
-        (item) =>
-          item.category.toLowerCase().includes(selectedTag.toLowerCase()) ||
-          item.title.toLowerCase().includes(selectedTag.toLowerCase())
-      );
+      (item) =>
+        item.category.toLowerCase().includes(selectedTag.toLowerCase()) ||
+        item.title.toLowerCase().includes(selectedTag.toLowerCase())
+    );
 
   const allImages = GALLERY_MOMENTS.map((g) => g.image);
 
@@ -84,13 +84,12 @@ export const ActMoments: React.FC = () => {
       className="relative min-h-[140vh] py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 select-none pointer-events-none"
     >
       <div className="space-y-16 pointer-events-auto">
-        
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-neutral-200 dark:border-zinc-800 pb-8">
           <div className="max-w-2xl space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25">
               <span className="text-[10px] font-heading font-bold uppercase tracking-[0.25em] text-amber-500">
-                Act V &bull; Atmospheric Moments
+                Atmospheric Moments & Visual Scenography
               </span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-neutral-900 dark:text-zinc-50 leading-tight">
@@ -138,6 +137,7 @@ export const ActMoments: React.FC = () => {
                 alt={item.title}
                 className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                 loading="lazy"
+                decoding="async"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -170,8 +170,9 @@ export const ActMoments: React.FC = () => {
           onPrev={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1))}
           onNext={() => setCurrentIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0))}
         />
-
       </div>
     </section>
   );
-};
+});
+
+ActMoments.displayName = 'ActMoments';

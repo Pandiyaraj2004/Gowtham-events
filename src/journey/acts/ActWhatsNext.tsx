@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
 import { db } from '../../data/db';
 import { UpcomingEvent } from '../../types';
@@ -16,7 +16,7 @@ interface TimeRemaining {
   seconds: number;
 }
 
-export const ActWhatsNext: React.FC<ActWhatsNextProps> = ({ onScrollToAct }) => {
+export const ActWhatsNext: React.FC<ActWhatsNextProps> = memo(({ onScrollToAct }) => {
   const [events, setEvents] = useState<UpcomingEvent[]>(defaultUpcoming);
   const [now, setNow] = useState(Date.now());
 
@@ -62,12 +62,11 @@ export const ActWhatsNext: React.FC<ActWhatsNextProps> = ({ onScrollToAct }) => 
       className="relative min-h-[130vh] py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 select-none pointer-events-none"
     >
       <div className="space-y-16 pointer-events-auto">
-        
         {/* Header */}
         <div className="max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25">
             <span className="text-[10px] font-heading font-bold uppercase tracking-[0.25em] text-amber-500">
-              Act VI &bull; Forward Horizons
+              Forward Horizons & Upcoming Galas
             </span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-neutral-900 dark:text-zinc-50 leading-tight">
@@ -100,9 +99,10 @@ export const ActWhatsNext: React.FC<ActWhatsNextProps> = ({ onScrollToAct }) => 
                     alt={event.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                     loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                  
+
                   <div className="absolute top-4 left-4 flex items-center gap-2">
                     <span className="px-3 py-1 rounded-full text-[10px] font-heading font-bold uppercase tracking-wider bg-amber-500 text-neutral-950">
                       {event.category || 'Gala'}
@@ -185,8 +185,9 @@ export const ActWhatsNext: React.FC<ActWhatsNextProps> = ({ onScrollToAct }) => 
             );
           })}
         </div>
-
       </div>
     </section>
   );
-};
+});
+
+ActWhatsNext.displayName = 'ActWhatsNext';

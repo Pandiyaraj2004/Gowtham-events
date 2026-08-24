@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,7 +20,7 @@ const inquirySchema = z.object({
 
 type InquiryFields = z.infer<typeof inquirySchema>;
 
-export const ActBegin: React.FC = () => {
+export const ActBegin: React.FC = memo(() => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -70,12 +70,11 @@ export const ActBegin: React.FC = () => {
       className="relative min-h-[130vh] py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 select-none pointer-events-none"
     >
       <div className="space-y-16 pointer-events-auto">
-        
         {/* Header */}
         <div className="max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25">
             <span className="text-[10px] font-heading font-bold uppercase tracking-[0.25em] text-amber-500">
-              Act VII &bull; The Prologue
+              Private Consultation & Atelier Inquiries
             </span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-neutral-900 dark:text-zinc-50 leading-tight">
@@ -89,10 +88,8 @@ export const ActBegin: React.FC = () => {
 
         {/* 2-Column Inquiry & Directorship Dossier */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          
           {/* Left Column: Form (7 cols) */}
           <div className="lg:col-span-7 rounded-3xl bg-white/70 dark:bg-zinc-900/80 backdrop-blur-2xl border border-neutral-200/80 dark:border-zinc-800 p-8 sm:p-10 shadow-2xl space-y-6">
-            
             {isSubmitted ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -257,7 +254,6 @@ export const ActBegin: React.FC = () => {
                 </button>
               </form>
             )}
-
           </div>
 
           {/* Right Column: Directorship Details (5 cols) */}
@@ -315,10 +311,10 @@ export const ActBegin: React.FC = () => {
               </div>
             </div>
           </div>
-
         </div>
-
       </div>
     </section>
   );
-};
+});
+
+ActBegin.displayName = 'ActBegin';

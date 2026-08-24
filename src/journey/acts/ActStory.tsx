@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { teamMembers, companyInfo } from '../../data/mockData';
 import { FiLinkedin, FiInstagram, FiTwitter, FiCompass } from 'react-icons/fi';
 
-export const ActStory: React.FC = () => {
+export const ActStory: React.FC = memo(() => {
   const milestones = [
     {
       year: '2018',
@@ -53,12 +53,11 @@ export const ActStory: React.FC = () => {
       className="relative min-h-[160vh] py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 select-none pointer-events-none"
     >
       <div className="space-y-24 pointer-events-auto">
-        
         {/* Header & Philosophy */}
         <div className="max-w-3xl space-y-5">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25">
             <span className="text-[10px] font-heading font-bold uppercase tracking-[0.25em] text-amber-500">
-              Act II &bull; Our Story & Vision
+              Our Story & Creative Philosophy
             </span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-neutral-900 dark:text-zinc-50 leading-tight">
@@ -192,8 +191,9 @@ export const ActStory: React.FC = () => {
             ))}
           </div>
         </div>
-
       </div>
     </section>
   );
-};
+});
+
+ActStory.displayName = 'ActStory';

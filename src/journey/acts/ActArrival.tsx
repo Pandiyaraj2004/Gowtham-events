@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { motion } from 'framer-motion';
 import { FiArrowDown, FiArrowUpRight, FiAward, FiCompass, FiShield, FiTrendingUp } from 'react-icons/fi';
 import { db } from '../../data/db';
@@ -8,7 +8,7 @@ interface ActArrivalProps {
   onScrollToAct: (actId: string) => void;
 }
 
-export const ActArrival: React.FC<ActArrivalProps> = ({ onScrollToAct }) => {
+export const ActArrival: React.FC<ActArrivalProps> = memo(({ onScrollToAct }) => {
   const [approvedCount, setApprovedCount] = useState<number>(48);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export const ActArrival: React.FC<ActArrivalProps> = ({ onScrollToAct }) => {
         >
           <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
           <span className="text-[11px] font-heading font-bold uppercase tracking-[0.2em] text-amber-500 dark:text-amber-400">
-            Act I &bull; Spatial Scenography & Masterpiece Direction
+            Spatial Scenography & Masterpiece Direction
           </span>
         </motion.div>
 
@@ -101,7 +101,6 @@ export const ActArrival: React.FC<ActArrivalProps> = ({ onScrollToAct }) => {
         className="pointer-events-auto"
       >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 sm:p-8 rounded-3xl bg-white/40 dark:bg-zinc-950/70 backdrop-blur-xl border border-white/20 dark:border-zinc-800/80 shadow-2xl">
-          
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-amber-500 text-xs font-bold uppercase tracking-wider">
               <FiAward size={15} />
@@ -133,15 +132,16 @@ export const ActArrival: React.FC<ActArrivalProps> = ({ onScrollToAct }) => {
             </div>
             <StatCounter target={100} suffix="%" label="White-glove NDA protocol" />
           </div>
-
         </div>
 
         {/* Subtle Scroll Cue */}
         <div className="flex items-center justify-center pt-8 text-neutral-400 dark:text-zinc-500 text-xs font-heading font-semibold uppercase tracking-widest gap-2">
-          <span>Scroll to travel the narrative</span>
+          <span>Scroll to explore</span>
           <FiArrowDown className="animate-bounce text-amber-500" />
         </div>
       </motion.div>
     </section>
   );
-};
+});
+
+ActArrival.displayName = 'ActArrival';
