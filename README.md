@@ -1,8 +1,34 @@
-# Gowtham Events Platform
+# Gowtham Events
 
-**Gowtham Events** is a production-grade, luxury **Event Management & Coordinating Company Web Application** built with React 18, TypeScript, Vite, WebGL (Three.js / React-Three-Fiber), and Firebase. It features advanced 3D shaders, real physically-based materials, scroll-choreographed camera dolly pipelines, real-time Firestore sync pipelines, Cloudinary media optimization, and a full multi-role authentication system.
+> An event-management interface combining interactive 3D storytelling with admin, client, and partner workspaces.
 
-> **Current Status:** ✅ Active Development — Dev server running (`npm run dev`) | Phases 1–4 complete | Phase 5 in progress.
+**React · TypeScript · Vite · Three.js · Firebase**
+
+## At a glance
+
+- A public-facing experience with scroll-driven scenes and reusable UI.
+- Dedicated layouts and screens for three authenticated roles.
+- Booking, gallery, messaging, and project-management interfaces.
+
+## Explore the implementation
+
+| Start here | What to inspect |
+| --- | --- |
+| [src/journey](src/journey) | Interactive scene composition |
+| [src/components](src/components) | Reusable UI and 3D components |
+| [src/pages](src/pages) | Role-specific screens |
+| [src/auth](src/auth) | Authentication and route guards |
+| [src/data](src/data) | Data-access layer |
+
+The payment and some partner routes remain placeholders. The client-side admin access code is a demo gate, not a server-enforced authorization boundary.
+
+---
+
+## Detailed guide
+
+**Gowtham Events** is a  **Event Management & Coordinating Company Web Application** built with React 18, TypeScript, Vite, WebGL (Three.js / React-Three-Fiber), and Firebase. It features advanced 3D shaders, real physically-based materials, scroll-choreographed camera dolly pipelines, real-time Firestore sync pipelines, Cloudinary media optimization, and a full multi-role authentication system.
+
+> **Current status:** Active development. Known placeholder routes are listed below.
 
 ---
 
@@ -463,8 +489,8 @@ const url = getOptimizedMediaUrl(rawCloudinaryUrl, {
 
 ### 1. Clone & Install
 ```bash
-git clone <repo-url>
-cd event-management
+git clone https://github.com/Pandiyaraj2004/Gowtham-events.git
+cd Gowtham-events
 npm install
 ```
 
@@ -473,7 +499,7 @@ Create a `.env` file in the project root:
 
 ```env
 # Admin Security Access Code (required for admin registration)
-VITE_ADMIN_ACCESS_CODE=VANGUARD_ADMIN_2026
+VITE_ADMIN_ACCESS_CODE=replace-with-your-own-demo-code
 
 # Firebase SDK Configuration (optional — omit to use mock data fallback)
 # VITE_FIREBASE_API_KEY=your_api_key_here
@@ -556,3 +582,7 @@ The following routes render placeholder UI pending full implementation:
 ## 📄 License
 
 Private project — All rights reserved © 2026 Gowtham Events.
+
+---
+
+Built by **Pandiyaraj A** · [Portfolio](https://pandiyaraj.netlify.app/) · [GitHub](https://github.com/Pandiyaraj2004) · [LinkedIn](https://www.linkedin.com/in/pandiyaraj-a-mca/)
